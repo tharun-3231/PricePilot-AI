@@ -11,10 +11,13 @@ import {
   Sparkles,
   Bot,
   TrendingUp,
+  User,
+  History,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
 import { useEffect, useRef } from "react";
+
 
 const menu = [
   {
@@ -67,6 +70,16 @@ const menu = [
     path: "/ai-assistant",
     icon: Bot,
   },
+  {
+  name: "Profile",
+  path: "/profile",
+  icon: User,
+},
+{
+  name: "Activity",
+  path: "/activity",
+  icon: History,
+},
 ];
 
 export default function Sidebar() {
@@ -153,23 +166,20 @@ export default function Sidebar() {
       {/* Bottom Section */}
       <div className="p-4 border-t flex-shrink-0">
 
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl p-3 text-white mb-3">
 
-          <h2 className="font-semibold text-sm">
-            Pro Plan
-          </h2>
 
-          <p className="text-[11px] opacity-90 mt-1">
-            Unlock AI Features
-          </p>
-
-          <button className="mt-2 w-full bg-white text-blue-600 rounded-lg py-2 text-xs font-semibold hover:bg-gray-100 transition">
-            Upgrade
-          </button>
-
-        </div>
-
-        <button className="w-full flex items-center justify-center gap-2 border rounded-xl py-3 hover:bg-red-50 text-gray-700 hover:text-red-600 transition">
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("user");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("refresh_token");
+            sessionStorage.removeItem("user");
+            window.location.href = "/login";
+          }}
+          className="w-full flex items-center justify-center gap-2 border rounded-xl py-3 hover:bg-red-50 text-gray-700 hover:text-red-600 transition"
+        >
 
           <LogOut size={18} />
 

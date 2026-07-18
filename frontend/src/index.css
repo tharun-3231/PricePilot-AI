@@ -1,1 +1,146 @@
 @import "tailwindcss";
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DARK THEME DEFINITIONS & UTILITIES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Global base overrides */
+.dark body {
+  background-color: #0b0f19 !important;
+  background-image: radial-gradient(circle at 10% 20%, rgba(20, 30, 48, 0.3) 0%, rgba(36, 59, 85, 0.1) 90.2%) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Gradients and background adaptions */
+.dark .bg-gradient-to-br.from-slate-100 {
+  background: linear-gradient(to bottom right, #0b0f19, #131a26) !important;
+}
+
+.dark .bg-white {
+  background-color: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-100,
+.dark .bg-gray-100 {
+  background-color: #1f2937 !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-slate-50:hover {
+  background-color: #1f2937/70 !important;
+}
+
+/* Border color overrides */
+.dark .border,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-gray-200,
+.dark .border-b,
+.dark .border-t {
+  border-color: #1f2937 !important;
+}
+
+/* Typography styles */
+.dark .text-slate-900,
+.dark .text-gray-900,
+.dark .text-black,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark th {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-500,
+.dark .text-gray-500,
+.dark .text-slate-600,
+.dark p {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-700,
+.dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+/* Form Controls */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #374151 !important;
+}
+
+.dark input:focus,
+.dark select:focus {
+  background-color: #1f2937 !important;
+  border-color: #3b82f6 !important;
+}
+
+.dark input::placeholder {
+  color: #475569 !important;
+}
+
+/* Sidebar structure adaptions */
+.dark aside,
+.dark header,
+.dark nav {
+  background-color: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+.dark aside a {
+  color: #94a3b8 !important;
+}
+
+.dark aside a.active,
+.dark aside a:hover {
+  color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Modals overlays & background dialog container */
+.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark .bg-white.rounded-3xl {
+  background-color: #111827 !important;
+  border: 1px solid #1f2937 !important;
+}
+
+/* Adjust standard shadows in dark mode */
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Blue tinted backgrounds */
+.dark .bg-blue-50,
+.dark .bg-blue-50\/50,
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+
+/* Stats metrics value adjustments */
+.dark .text-green-700 { color: #4ade80 !important; }
+.dark .text-red-700 { color: #f87171 !important; }
+.dark .text-yellow-700 { color: #fbbf24 !important; }
+
+.dark .bg-green-100 { background-color: rgba(74, 222, 128, 0.1) !important; }
+.dark .bg-red-100 { background-color: rgba(248, 113, 113, 0.1) !important; }
+.dark .bg-yellow-100 { background-color: rgba(251, 191, 36, 0.1) !important; }
+
+/* Interactive select option items */
+.dark option {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+}

@@ -1,123 +1,205 @@
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useData } from "../context/DataContext";
+
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
 } from "recharts";
 
-const data = [
-  { month: "Jan", revenue: 4000 },
-  { month: "Feb", revenue: 5200 },
-  { month: "Mar", revenue: 6100 },
-  { month: "Apr", revenue: 7800 },
-  { month: "May", revenue: 8500 },
-  { month: "Jun", revenue: 9800 },
-  { month: "Jul", revenue: 11200 },
-  { month: "Aug", revenue: 12800 },
-  { month: "Sep", revenue: 14200 },
-  { month: "Oct", revenue: 15100 },
-  { month: "Nov", revenue: 16400 },
-  { month: "Dec", revenue: 18200 },
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-function CustomTooltip({ active, payload, label }) {
-  if (active && payload && payload.length) {
+export default function RevenueChart() {
+  const { stats, products, darkMode } = useData();
+
+  const [view, setView] = useState("Revenue");
+
+  const chartData = useMemo(() => {
+    if (stats && stats.monthlyAnalytics && stats.monthlyAnalytics.length > 0) {
+      return stats.monthlyAnalytics;
+    }
+    return MONTHS.map((month) => ({
+      month,
+      Revenue: 0,
+      Sales: 0,
+      Profit: 0,
+      Forecast: 0,
+    }));
+  }, [stats]);
+
+  const totalRevenue = chartData.reduce(
+    (sum, item) => sum + item.Revenue,
+    0
+  );
+
+  const totalSales = chartData.reduce(
+    (sum, item) => sum + item.Sales,
+    0
+  );
+
+  const totalProfit = chartData.reduce(
+    (sum, item) => sum + item.Profit,
+    0
+  );
+
+  if (!products.length) {
     return (
-      <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4">
-        <p className="font-semibold text-gray-800">{label}</p>
-        <p className="text-blue-600 font-bold text-lg">
-          ${payload[0].value.toLocaleString()}
+      <div className="bg-white rounded-3xl shadow-lg border p-10 text-center">
+        <h2 className="text-3xl font-bold">
+          Revenue Analytics
+        </h2>
+
+        <p className="text-gray-500 mt-3">
+          Upload a dataset to see charts.
         </p>
       </div>
     );
   }
 
-  return null;
-}
-
-export default function RevenueChart() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white/80 backdrop-blur-lg rounded-3xl border border-gray-200 shadow-lg p-6"
+      className="bg-white rounded-3xl shadow-lg border p-8"
     >
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-6">
+
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+
+          <h2 className="text-3xl font-bold">
             Revenue Analytics
           </h2>
 
-          <p className="text-gray-500 mt-1">
-            AI predicted revenue growth
+          <p className="text-gray-500 mt-2">
+            Monthly Business Performance
           </p>
+
         </div>
 
-        <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-lg bg-blue-600 text-white">
-            12M
-          </button>
+        <div className="flex gap-3 flex-wrap">
 
-          <button className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">
-            6M
-          </button>
+          {["Revenue", "Sales", "Profit", "Forecast"].map((type) => (
 
-          <button className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">
-            30D
-          </button>
+            <button
+              key={type}
+              onClick={() => setView(type)}
+              className={`px-4 py-2 rounded-xl transition ${
+                view === type
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              {type}
+            </button>
+
+          ))}
+
         </div>
+
       </div>
 
-      <ResponsiveContainer width="100%" height={360}>
-        <AreaChart data={data}>
+      <ResponsiveContainer width="100%" height={380}>
+
+        <AreaChart data={chartData}>
+
           <defs>
-            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.02} />
+
+            <linearGradient
+              id="gradient"
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+
+              <stop
+                offset="5%"
+                stopColor="#2563eb"
+                stopOpacity={0.8}
+              />
+
+              <stop
+                offset="95%"
+                stopColor="#2563eb"
+                stopOpacity={0.05}
+              />
+
             </linearGradient>
+
           </defs>
 
-          <CartesianGrid
-            strokeDasharray="4 4"
-            stroke="#e5e7eb"
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#334155" : "#e2e8f0"} />
 
-          <XAxis
-            dataKey="month"
-            tick={{ fill: "#6b7280" }}
-            axisLine={false}
-            tickLine={false}
-          />
+          <XAxis dataKey="month" stroke={darkMode ? "#94a3b8" : "#475569"} fontSize={12} tickLine={false} />
 
-          <YAxis
-            tick={{ fill: "#6b7280" }}
-            axisLine={false}
-            tickLine={false}
-          />
+          <YAxis stroke={darkMode ? "#94a3b8" : "#475569"} fontSize={12} tickLine={false} />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip />
 
           <Area
             type="monotone"
-            dataKey="revenue"
+            dataKey={view}
             stroke="#2563eb"
-            strokeWidth={4}
-            fillOpacity={1}
-            fill="url(#colorRevenue)"
-            activeDot={{
-              r: 7,
-              stroke: "#2563eb",
-              strokeWidth: 2,
-            }}
+            fill="url(#gradient)"
+            strokeWidth={3}
           />
+
         </AreaChart>
+
       </ResponsiveContainer>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+
+        <div className="bg-blue-50 rounded-2xl p-5">
+
+          <p>Total Revenue</p>
+
+          <h2 className="text-3xl font-bold text-blue-700 mt-2">
+            ₹{totalRevenue.toLocaleString()}
+          </h2>
+
+        </div>
+
+        <div className="bg-green-50 rounded-2xl p-5">
+
+          <p>Total Sales</p>
+
+          <h2 className="text-3xl font-bold text-green-700 mt-2">
+            {totalSales.toLocaleString()}
+          </h2>
+
+        </div>
+
+        <div className="bg-purple-50 rounded-2xl p-5">
+
+          <p>Estimated Profit</p>
+
+          <h2 className="text-3xl font-bold text-purple-700 mt-2">
+            ₹{totalProfit.toLocaleString()}
+          </h2>
+
+        </div>
+
+      </div>
+
     </motion.div>
   );
 }

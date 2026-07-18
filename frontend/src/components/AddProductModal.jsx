@@ -1,244 +1,194 @@
-import { useState, useEffect } from "react";
-import { X, Upload } from "lucide-react";
+import { useState } from "react";
+import { X } from "lucide-react";
+import { useData } from "../context/DataContext";
+import calculateStats from "../utils/calculateStats";
+import api from "../services/api";
+import toast from "react-hot-toast";
+import { addActivityLog } from "../utils/activityLogger";
 
-const emptyForm = {
-  id: null,
-  name: "",
-  brand: "",
-  category: "Smartphones",
-  price: "",
-  competitor: "",
-  recommendation: "Maintain",
-  status: "Tracking",
-};
+export default function AddProductModal({ isOpen, onClose, editProductId = null }) {
+  const { products, setProducts, setStats } = useData();
 
-export default function AddProductModal({
-  isOpen,
-  onClose,
-  onSave,
-  product,
-  isEditing,
-}) {
-  const [form, setForm] = useState(emptyForm);
-
-  useEffect(() => {
-    if (product) {
-      setForm({
-        ...product,
-        price: String(product.price).replace("$", ""),
-        competitor: String(product.competitor).replace("$", ""),
-      });
-    } else {
-      setForm(emptyForm);
+  const [form, setForm] = useState(() => {
+    const editProduct = editProductId !== null ? products.find((p) => p.id === editProductId) : null;
+    if (editProduct) {
+      return {
+        product: editProduct.product || "",
+        category: editProduct.category || "",
+        price: editProduct.price || "",
+        stock: editProduct.stock || "",
+        sales: editProduct.sales || "",
+      };
     }
-  }, [product, isOpen]);
+    return {
+      product: "",
+      category: "",
+      price: "",
+      stock: "",
+      sales: "",
+    };
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const revenue = Number(form.price) * Number(form.sales);
+    const profit = revenue * 0.3;
+
+    const payload = {
+      product: form.product,
+      category: form.category,
+      price: Number(form.price),
+      stock: Number(form.stock),
+      sales: Number(form.sales),
+      revenue,
+      profit,
+      margin: 30,
+    };
+
+    setLoading(true);
+    const toastId = toast.loading(editProductId !== null ? "Updating product..." : "Saving product...");
+    try {
+      let res;
+      if (editProductId !== null) {
+        res = await api.put(`/products/${editProductId}`, payload);
+      } else {
+        res = await api.post("/products", payload);
+      }
+
+      if (res.data && res.data.status === "success") {
+        setProducts(res.data.products || []);
+        setStats(res.data.stats || calculateStats(res.data.products));
+        
+        if (editProductId !== null) {
+          addActivityLog("Product Updated", `Product ${payload.product} was modified.`, "edit");
+        } else {
+          addActivityLog("Product Added", `Product ${payload.product} was created.`, "plus");
+        }
+
+        toast.success(editProductId !== null ? "Product updated successfully!" : "Product added successfully!", { id: toastId });
+
+        setForm({
+          product: "",
+          category: "",
+          price: "",
+          stock: "",
+          sales: "",
+        });
+        onClose();
+      } else {
+        toast.error("Operation failed.", { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.detail || "Failed to save product.", { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (
-      !form.name.trim() ||
-      !form.brand.trim() ||
-      !form.price ||
-      !form.competitor
-    ) {
-      alert("Please fill all required fields.");
-      return;
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
     }
-
-    onSave({
-      ...form,
-      price: `$${form.price}`,
-      competitor: `$${form.competitor}`,
-    });
-
-    setForm(emptyForm);
-    onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-8">
-
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">
-            {isEditing ? "Edit Product" : "Add New Product"}
+    <div 
+      onClick={handleOverlayClick}
+      className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 cursor-pointer"
+    >
+      <div className="bg-white rounded-3xl w-full max-w-lg p-8 cursor-default" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">
+            {editProductId !== null ? "Edit Product" : "Add Product"}
           </h2>
-
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-100"
-          >
+          <button onClick={onClose}>
             <X />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="product"
+            placeholder="Product Name"
+            value={form.product}
+            onChange={handleChange}
+            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-          <div className="grid grid-cols-2 gap-6">
+          <input
+            type="text"
+            name="category"
+            placeholder="Category"
+            value={form.category}
+            onChange={handleChange}
+            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Product Name
-              </label>
+          <input
+            type="number"
+            name="price"
+            placeholder="Price"
+            value={form.price}
+            onChange={handleChange}
+            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="iPhone 16 Pro"
-                className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          <input
+            type="number"
+            name="stock"
+            placeholder="Stock"
+            value={form.stock}
+            onChange={handleChange}
+            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Brand
-              </label>
+          <input
+            type="number"
+            name="sales"
+            placeholder="Sales"
+            value={form.sales}
+            onChange={handleChange}
+            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-              <input
-                type="text"
-                name="brand"
-                value={form.brand}
-                onChange={handleChange}
-                placeholder="Apple"
-                className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Category
-              </label>
-
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                className="w-full border rounded-xl px-4 py-3"
-              >
-                <option>Smartphones</option>
-                <option>Laptops</option>
-                <option>Accessories</option>
-                <option>Headphones</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Price ($)
-              </label>
-
-              <input
-                type="number"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-                placeholder="999"
-                className="w-full border rounded-xl px-4 py-3"
-              />
-            </div>
-
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Competitor Price ($)
-              </label>
-
-              <input
-                type="number"
-                name="competitor"
-                value={form.competitor}
-                onChange={handleChange}
-                placeholder="979"
-                className="w-full border rounded-xl px-4 py-3"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Recommendation
-              </label>
-
-              <select
-                name="recommendation"
-                value={form.recommendation}
-                onChange={handleChange}
-                className="w-full border rounded-xl px-4 py-3"
-              >
-                <option>Maintain</option>
-                <option>Increase</option>
-                <option>Decrease</option>
-              </select>
-            </div>
-
-          </div>
-
-          <div>
-            <label className="block mb-2 font-medium">
-              Product Image
-            </label>
-
-            <div className="border-2 border-dashed rounded-2xl p-8 text-center">
-              <Upload
-                size={40}
-                className="mx-auto text-blue-500 mb-3"
-              />
-
-              <p className="text-gray-500">
-                Upload Product Image
-              </p>
-
-              <input
-                type="file"
-                className="mt-4"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-4">
-
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
-              onClick={() => {
-                setForm(emptyForm);
-                onClose();
-              }}
-              className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100"
+              onClick={onClose}
+              className="px-5 py-3 rounded-xl border hover:bg-gray-100 transition"
             >
               Cancel
             </button>
-
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={loading}
+              className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition disabled:bg-blue-400"
             >
-              {isEditing ? "Update Product" : "Save Product"}
+              {loading
+                ? (editProductId !== null ? "Updating..." : "Saving...")
+                : (editProductId !== null ? "Update Product" : "Save Product")}
             </button>
-
           </div>
-
         </form>
-
       </div>
     </div>
   );

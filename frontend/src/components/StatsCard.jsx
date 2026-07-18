@@ -1,93 +1,104 @@
 import {
+  Package,
   DollarSign,
-  TrendingUp,
   ShoppingCart,
-  Bell,
+  TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useData } from "../context/DataContext";
 
-const stats = [
-  {
-    title: "Revenue Saved",
-    value: "$24,580",
-    change: "+12.5%",
-    icon: DollarSign,
-    color: "bg-blue-500",
-  },
-  {
-    title: "Tracked Products",
-    value: "1,248",
-    change: "+8.2%",
-    icon: ShoppingCart,
-    color: "bg-green-500",
-  },
-  {
-    title: "Price Changes",
-    value: "342",
-    change: "+18.4%",
-    icon: TrendingUp,
-    color: "bg-purple-500",
-  },
-  {
-    title: "Active Alerts",
-    value: "28",
-    change: "-2.1%",
-    icon: Bell,
-    color: "bg-orange-500",
-  },
-];
+function formatAbbreviated(value, isCurrency = true) {
+  const num = typeof value === "number" ? value : parseFloat(value);
+  if (isNaN(num)) return value;
+  
+  const prefix = isCurrency ? "₹" : "";
+  if (num >= 1e9) {
+    return `${prefix}${(num / 1e9).toFixed(2)}B`;
+  }
+  if (num >= 1e6) {
+    return `${prefix}${(num / 1e6).toFixed(1)}M`;
+  }
+  if (num >= 1e3) {
+    return `${prefix}${(num / 1e3).toFixed(1)}K`;
+  }
+  return `${prefix}${num.toLocaleString()}`;
+}
 
 export default function StatsCard() {
+  const { stats } = useData();
+
+  const cards = [
+    {
+      title: "Total Products",
+      value: formatAbbreviated(stats.totalProducts || 0, false),
+      fullValue: (stats.totalProducts || 0).toLocaleString(),
+      subtext: `Avg. Price: ₹${Number(stats.averagePrice || 0).toFixed(2)}`,
+      icon: Package,
+      color: "bg-blue-500",
+    },
+    {
+      title: "Total Revenue",
+      value: formatAbbreviated(stats.totalRevenue || 0, true),
+      fullValue: `₹${Number(stats.totalRevenue || 0).toLocaleString()}`,
+      subtext: `Avg. Rev: ₹${Number(stats.averageRevenue || 0).toLocaleString()}`,
+      icon: DollarSign,
+      color: "bg-emerald-500",
+    },
+    {
+      title: "Estimated Profit",
+      value: formatAbbreviated(stats.profit || 0, true),
+      fullValue: `₹${Number(stats.profit || 0).toLocaleString()}`,
+      subtext: "Dynamic 30% margin yield",
+      icon: TrendingUp,
+      color: "bg-violet-500",
+    },
+    {
+      title: "Inventory Asset Value",
+      value: formatAbbreviated(stats.inventoryValue || 0, true),
+      fullValue: `₹${Number(stats.inventoryValue || 0).toLocaleString()}`,
+      subtext: `${stats.lowStock || 0} Low Stock Alerts`,
+      icon: ShoppingCart,
+      color: "bg-amber-500",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {stats.map((item, index) => {
-        const Icon = item.icon;
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      {cards.map((card, index) => {
+        const Icon = card.icon;
 
         return (
           <motion.div
-            key={item.title}
-            initial={{ opacity: 0, y: 25 }}
+            key={card.title}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{
-              y: -8,
-              scale: 1.02,
-            }}
-            whileTap={{ scale: 0.98 }}
-            transition={{
-              delay: index * 0.1,
-              type: "spring",
-              stiffness: 250,
-              damping: 18,
-            }}
-            className="bg-white/80 backdrop-blur-lg rounded-3xl p-6 border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300"
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ scale: 1.02 }}
+            className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 flex flex-col justify-between cursor-pointer"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 text-sm">
-                  {item.title}
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <p className="text-gray-500 text-sm font-semibold tracking-wide truncate">
+                  {card.title}
                 </p>
-
-                <h2 className="text-3xl font-bold text-gray-900 mt-2">
-                  {item.value}
-                </h2>
-
-                <span
-                  className={`inline-block mt-4 px-3 py-1 rounded-full text-sm font-semibold ${
-                    item.change.startsWith("-")
-                      ? "bg-red-100 text-red-600"
-                      : "bg-green-100 text-green-600"
-                  }`}
+                <h2 
+                  className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-2 tracking-tight break-words"
+                  title={card.fullValue}
                 >
-                  {item.change}
-                </span>
+                  {card.value}
+                </h2>
               </div>
-
               <div
-                className={`w-14 h-14 rounded-2xl ${item.color} flex items-center justify-center text-white shadow-md`}
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow flex-shrink-0 ${card.color}`}
               >
-                <Icon size={26} />
+                <Icon size={24} />
               </div>
             </div>
+            {card.subtext && (
+              <div className="mt-4 pt-3 border-t border-slate-50 text-xs font-semibold text-slate-500">
+                {card.subtext}
+              </div>
+            )}
           </motion.div>
         );
       })}
