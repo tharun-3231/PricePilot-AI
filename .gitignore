@@ -1,0 +1,37 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database file
+backend/pricepilot.db
+
+# User data and uploads (should not be in public git)
+backend/uploads/
+backend/datasets/
+backend/models/
+
+# Environment configurations containing credentials
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Node dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

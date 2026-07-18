@@ -13,6 +13,14 @@ services:
       - ./backend/models:/app/models
     environment:
       - ENV=production
+      - MONGODB_URI=${MONGODB_URI:-mongodb://localhost:27017/pricepilot}
+      - JWT_SECRET=${JWT_SECRET:-super_secret_pricepilot_access_key_2026}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-super_secret_pricepilot_refresh_key_2026}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
 
   frontend:
     build:
@@ -23,4 +31,4 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
